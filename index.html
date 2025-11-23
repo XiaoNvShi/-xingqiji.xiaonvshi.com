@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天星期几 - 今日周几 - 肖女士</title>
+<meta name="description" content="查看今天星期几，以及未来30天的周几信息，带日历风格显示，方便日程规划。">
+<meta name="keywords" content="今天星期几, 周几, 日历, 未来30天, 今日周几">
+<meta name="author" content="肖女士">
+<style>
+body {
+  margin: 0;
+  font-family: "Microsoft YaHei", sans-serif;
+  background: #f7f6f3;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* 大标题 */
+h1 {
+  font-size: 2.8rem;
+  color: #4a2e00;
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+}
+
+/* 今日日期和星期 */
+.date-box{
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.weekday-box {
+  font-size: 1.5rem;
+  padding: 10px 25px;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.date-box {
+  color: #5c3a00;
+}
+
+.weekday-box {
+  background: #ffe8c2;
+  color: #7a4b00;
+  font-weight: bold;
+}
+
+/* 未来30天日历 */
+h2 {
+  font-size: 2rem;
+  color: #4a2e00;
+  margin: 30px 0 15px 0;
+  text-align: center;
+}
+
+.future-days {
+  margin-top:10px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.day-card {
+  position: relative;
+  padding: 14px;
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fffaf0;
+  border-radius: 14px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+  transition: transform 0.25s, box-shadow 0.25s;
+  font-size: 0.85rem;
+}
+
+.day-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.day-card .icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+}
+
+/* 日期文字 */
+.day-card h3 {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #6b3e00;
+}
+
+/* 星期文字 */
+.day-card .weekday {
+  font-size: 0.85rem;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 10px;
+  margin-top: 5px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* 星期颜色 */
+.weekday.weekday-green { background: #4CAF50; } /* 周一至周五绿色 */
+.weekday.weekday-blue { background: #2196F3; }  /* 周六蓝色 */
+.weekday.weekday-red { background: #F44336; }   /* 周日红色 */
+
+/* 手机端自适应 */
+@media (max-width: 1200px) { .future-days { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 992px) { .future-days { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px) { .future-days { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .future-days { grid-template-columns: 1fr; } }
+
+/* 底部版权 */
+.copyright {
+  width: 100%;
+  text-align: center;
+  color: #8b4000;
+  font-size: 0.9rem;
+  margin-top: 50px;
+}
+.copyright a {
+  color: #8b4000;
+  text-decoration: none;
+}
+.copyright a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1>今天是</h1>
+<div class="date-box" id="date-box">加载中...</div>
+<div class="weekday-box" id="weekday-box">加载中...</div>
+
+<div class="future-days" id="future-days">加载中...</div>
+
+<div class="copyright">
+  ©2025 <a href="https://www.xiaonvshi.com/" title="肖女士">肖女士</a> 版权所有
+</div>
+
+<script>
+const dateBox = document.getElementById('date-box');
+const weekdayBox = document.getElementById('weekday-box');
+const futureContainer = document.getElementById('future-days');
+
+const now = new Date();
+const year = now.getFullYear();
+const month = now.getMonth() + 1;
+const day = now.getDate();
+dateBox.textContent = `${year}年${month}月${day}日`;
+
+// 今日星期
+fetch(`https://api.mrwang.com/date.php?type=xingqiji&year=${year}&month=${month}&day=${day}`)
+  .then(res => res.json())
+  .then(data => {
+    if(data.code === "200" && data.data){
+      weekdayBox.textContent = `星期${data.data}`;
+    } else {
+      weekdayBox.textContent = '无法获取星期信息';
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    weekdayBox.textContent = '无法获取星期信息';
+  });
+
+// 未来30天
+futureContainer.innerHTML = '';
+for(let i=1; i<=30; i++){
+  const d = new Date();
+  d.setDate(d.getDate() + i);
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const dayNum = d.getDate();
+  const dayId = `day-${i}`;
+
+  const dayCard = document.createElement('div');
+  dayCard.className = 'day-card';
+  dayCard.id = dayId;
+  dayCard.innerHTML = `
+    <div class="icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#ffe6b3" stroke="#8b4513" stroke-width="1.5"/>
+        <line x1="3" y1="9" x2="21" y2="9" stroke="#8b4513" stroke-width="1.5"/>
+        <line x1="7" y1="2" x2="7" y2="6" stroke="#8b4513" stroke-width="1.5"/>
+        <line x1="17" y1="2" x2="17" y2="6" stroke="#8b4513" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <h3>${y}年${m}月${dayNum}日</h3>
+    <div class="weekday">加载中...</div>
+  `;
+  futureContainer.appendChild(dayCard);
+
+  // 请求星期几
+  fetch(`https://api.mrwang.com/date.php?type=xingqiji&year=${y}&month=${m}&day=${dayNum}`)
+    .then(res => res.json())
+    .then(data => {
+      let wd = '获取失败';
+      if(data.code==="200" && data.data) wd = data.data;
+      const weekdayDiv = document.querySelector(`#${dayId} .weekday`);
+      weekdayDiv.textContent = `星期${wd}`;
+      // 根据星期设置颜色
+      if(wd==='日') weekdayDiv.classList.add('weekday-red');
+      else if(wd==='六') weekdayDiv.classList.add('weekday-blue');
+      else weekdayDiv.classList.add('weekday-green');
+    })
+    .catch(err => {
+      console.error(err);
+      document.querySelector(`#${dayId} .weekday`).textContent = '获取失败';
+    });
+}
+</script>
+
+</body>
+</html>
